@@ -26,7 +26,7 @@ if exists('g:loaded_fzf')
 endif
 let g:loaded_fzf = 1
 
-let s:is_win = has('win32') || has('win64')
+let s:is_win = (has('win32') || has('win64')) && !has_key(environ(), 'MSYSTEM')
 if s:is_win && &shellslash
   set noshellslash
   let s:base_dir = expand('<sfile>:h:h')
