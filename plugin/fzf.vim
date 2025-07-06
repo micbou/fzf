@@ -562,7 +562,13 @@ try
     let optstr = join([s:border_opt(get(dict, 'window', 0)), s:extract_option($FZF_DEFAULT_OPTS, 'border'), optstr])
   endif
 
-  let command = prefix.(use_tmux ? s:fzf_tmux(dict) : fzf_exec).' '.optstr.' > '.temps.result
+  " Redirecting to temporary file does not work with tmux. Use 'systemlist'
+  " instead to get stdout as lines.
+  if use_tmux
+    let command = prefix.s:fzf_tmux(dict).' '.optstr
+  else
+    let command = prefix.fzf_exec.' '.optstr.' > '.temps.result
+  endif
 
   if use_term
     return s:execute_term(dict, command, temps)
@@ -750,10 +756,9 @@ function! s:execute_tmux(dict, command, temps) abort
     let command = join(['cd', fzf#shellescape(cwd), '&&', command])
   endif
 
-  call system(command)
+  let lines = systemlist(command)
   let exit_status = v:shell_error
   redraw!
-  let lines = s:collect(a:temps)
   return s:exit_handler(a:dict, exit_status, command) < 2 ? lines : []
 endfunction
 
